@@ -1,0 +1,8 @@
+name: epoxy
+dev_dependencies:
+    test:
+    matcher:
+dependencies:
+    meta:
+transformers:
+- $dart2js
