@@ -27,6 +27,30 @@ bindableA.value = 10;
 expect(bindableB.value, equals(20));
 ```
 
+Keep a running total of items in a list:
+```dart
+final expenses = new BindableList([1, 2, 3, 4]);
+final sum = expenses.reduce((val1, val2) => val1 + val2);
+expect(sum.value, equals(10));
+
+expenses.add(5);
+expect(sum.value, equals(15));
+
+expenses[0] = 0;
+expect(sum.value, equals(14));
+```
+
+Maintain a dynamic selection from a list:
+```dart
+final letters = new BindableList(['A', 'B', 'C', 'D', 'E']);
+final selectedIndex = new Bindable(0);
+final selection = letters[selectedIndex];
+expect(selection, bindableEquals('A'));
+
+selectedIndex.value = 2;
+expect(selection, bindableEquals('C'));
+```
+
 Generate a reactive version of the fibonacci sequence:
 ```dart
 final fibonacci = new BindableList([1, 1]);
@@ -36,6 +60,16 @@ expect(fibonacci.value, equals([1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]));
 fibonacci[0] = 2;
 fibonacci[1] = 2;
 expect(fibonacci.value, equals([2, 2, 4, 6, 10, 16, 26, 42, 68, 110, 178, 288]));
+```
+
+Automatically make everything awesome:
+```dart
+final stuffList = new BindableList(['Dart', 'Epoxy']);
+final awesomeList = stuffList.map((item) => item + ' is awesome!');
+expect(awesomeList[0].value, equals('Dart is awesome!'));
+
+stuffList.add('Reactive Programming')
+expect(awesomeList[2].value, equals('Reactive Programming is awesome!'));
 ```
 
 ### Testing
