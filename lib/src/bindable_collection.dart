@@ -66,6 +66,7 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
     @protected
     void attachPropertyBindable(PropertyBindable bindable) {
         final propertyName = bindable.propertyName;
+        this.propertyCache[propertyName] = bindable;
         this._propertySubscriptions[propertyName] = bindable.changeStream.listen((change) {
             if (change is PropertyChangeRecord) {
                 final newPath = change.path.toList();
@@ -147,9 +148,8 @@ abstract class BindableDataStructure<T, K, V> extends BaseBindableCollection<T, 
 
         if (index is K) {
             if (!this.propertyCache.containsKey(index)) {
-                this.propertyCache[index] = new PropertyBindable(
-                    index, new Bindable(super.value[index]));
-                this.attachPropertyBindable(this.propertyCache[index]);
+                this.attachPropertyBindable(new PropertyBindable(
+                    index, new Bindable(super.value[index])));
             }
             return this.propertyCache[index];
         }

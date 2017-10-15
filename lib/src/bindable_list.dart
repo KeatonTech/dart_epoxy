@@ -152,9 +152,8 @@ abstract class BaseBindableList<T> extends BindableDataStructure<List<T>, int, T
                 if (this.propertyCache.containsKey(i + startIndex)) {
                     this.propertyCache[i + startIndex].basis = list[i];
                 } else {
-                    this.propertyCache[i + startIndex] = new PropertyBindable(
-                        i + startIndex, list[i]);
-                    this.attachPropertyBindable(this.propertyCache[i + startIndex]);
+                    this.attachPropertyBindable(new PropertyBindable(
+                        i + startIndex, list[i]));
                 }
             } else if (this.propertyCache.containsKey(i + startIndex)) {
                 if (this.propertyCache[i + startIndex].basis is Bindable) {
