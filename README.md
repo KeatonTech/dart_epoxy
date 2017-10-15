@@ -51,6 +51,27 @@ selectedIndex.value = 2;
 expect(selection, bindableEquals('C'));
 ```
 
+Create a bindable version of a struct class:
+```dart
+class RoughLocation {
+    int latitude;
+    int longitude;
+    LocationStruct(this.latitude, this.longitude);
+}
+
+final bindableLocation = new BindableStruct<RoughLocation>(-50, 45);
+expect(bindableLocation.latitude, equals(-50));
+
+// Prefixing property names with a '$' returns the bindable instance, which is helpful for
+// making things like computed properties. Otherwise the properties of the BindableStruct
+// class match those of the base struct.
+bindableLocation.longitude = bindableLocation.$latitude * 2;
+expect(bindableLocation.longitude, equals(-100));
+
+bindableLocation.latitude = 15;
+expect(bindableLocation.longitude, equals(30));
+```
+
 Generate a reactive version of the fibonacci sequence:
 ```dart
 final fibonacci = new BindableList([1, 1]);

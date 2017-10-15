@@ -115,7 +115,7 @@ abstract class BindableDataStructure<T, K, V> extends BaseBindableCollection<T, 
         if (index is K) {
             if (!this.propertyCache.containsKey(index)) {
                 this.propertyCache[index] = new PropertyBindable(
-                    this, index, new Bindable(this.value[index]));
+                    this, index, new Bindable(super.value[index]));
             }
             return this.propertyCache[index];
         }
