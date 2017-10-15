@@ -72,6 +72,21 @@ bindableLocation.latitude = 15;
 expect(bindableLocation.longitude, equals(30));
 ```
 
+Similarly, you can create your own custom bindable classes with more functionality:
+```dart
+class BindableLocation extends BindableObject {
+    // This bindable will be published as this.latitude, with getters and setters to track
+    // changes. The $ prefix is a convention, not a rule. The only hard rule is that the
+    // name of the bindable property must be different from its published name ('latitude').
+    final $latitude = new PropertyBindable('latitude', 100);
+    final $longitude = new PropertyBindable('longitude', 50);
+}
+
+final bindableLocation = new BindableLocation();
+expect(bindableLocation.latitude, equals(100));
+expect(bindableLocation.longitude, equals(50));
+```
+
 Generate a reactive version of the fibonacci sequence:
 ```dart
 final fibonacci = new BindableList([1, 1]);

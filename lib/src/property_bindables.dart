@@ -12,7 +12,7 @@ import 'bindable_collection.dart';
 class PropertyBindable<K, V> extends SwitchBindable<V> {
     K propertyName;
 
-    PropertyBindable(this.propertyName, basis) : super(basis);
+    PropertyBindable(this.propertyName, [basis = null]) : super(basis);
 
     /// Notifies this class of a change event coming from the basis bindable. This overrides
     /// a simpler function on SwitchBindable to notify the parent bindable.

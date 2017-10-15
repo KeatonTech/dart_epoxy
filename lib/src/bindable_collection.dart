@@ -52,7 +52,7 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
     /// example, if the user creates a BindableList of Lists, this will automatically convert
     /// it into a BindableList of BindableLists.
     @protected
-    dynamic processValueForInsert(K insertionIndex, dynamic value) {
+    dynamic processValueForInsert(dynamic value) {
         if (value is List) value = new BindableList(value);
         if (value is Map) value = new BindableMap(value);
         if (value is BaseWrappedValue && !(value is BaseBindable)) {
@@ -173,7 +173,7 @@ abstract class BindableDataStructure<T, K, V> extends BaseBindableCollection<T, 
     void operator[]= (K index, dynamic newValue) {
 
         // Allows subclasses to process this value accordingly.
-        final processedValue = this.processValueForInsert(index, newValue);
+        final processedValue = this.processValueForInsert(newValue);
 
         // If the referenced index has a subproperty binding, update it
         if (this.propertyCache.containsKey(index)) {

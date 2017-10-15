@@ -147,7 +147,7 @@ abstract class BaseBindableList<T> extends BindableDataStructure<List<T>, int, T
     @protected
     List<T> processValueList(List<dynamic> list, {int startIndex: 0}) {
         for (var i = 0; i < list.length; i++) {
-            list[i] = this.processValueForInsert(startIndex + i, list[i]);
+            list[i] = this.processValueForInsert(list[i]);
             if (list[i] is BaseBindable) {
                 if (this.propertyCache.containsKey(i + startIndex)) {
                     this.propertyCache[i + startIndex].basis = list[i];
