@@ -67,6 +67,7 @@ class BindableMap<K, V> extends BindableDataStructure<Map<K, V>, K, V> {
         this.invalidationController.add(true);
         this.changeController.add(
             new PropertyChangeRecord([key], new ValueChangeRecord(lastValue, null)));
+        this.notePropertyDeleted(key);
         return true;
     }
 }

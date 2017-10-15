@@ -10,22 +10,14 @@ import 'bindable_collection.dart';
 /// down to whichever Bindable is currently on that property. This is a proxy class that
 /// delegates function calls (such as .add() or .clear()) down to its basis bindable.
 class PropertyBindable<K, V> extends SwitchBindable<V> {
-    final BaseBindableCollection _parent;
     K propertyName;
 
-    PropertyBindable(this._parent, this.propertyName, basis) : super(basis);
+    PropertyBindable(this.propertyName, basis) : super(basis);
 
     /// Notifies this class of a change event coming from the basis bindable. This overrides
     /// a simpler function on SwitchBindable to notify the parent bindable.
     void noteBasisChange(ChangeRecord change) {
         if (this.destroyed) return;
-        if (change is PropertyChangeRecord) {
-            final newPath = change.path.toList();
-            newPath.insert(0, this.propertyName);
-            this._parent.noteSubpropertyChange(newPath, change.baseChange);
-        } else {
-            this._parent.noteSubpropertyChange([this.propertyName], change);
-        }
         this.changeController.add(change);
     }
 }

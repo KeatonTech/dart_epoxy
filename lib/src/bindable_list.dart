@@ -153,7 +153,8 @@ abstract class BaseBindableList<T> extends BindableDataStructure<List<T>, int, T
                     this.propertyCache[i + startIndex].basis = list[i];
                 } else {
                     this.propertyCache[i + startIndex] = new PropertyBindable(
-                        this, i + startIndex, list[i]);
+                        i + startIndex, list[i]);
+                    this.attachPropertyBindable(this.propertyCache[i + startIndex]);
                 }
             } else if (this.propertyCache.containsKey(i + startIndex)) {
                 if (this.propertyCache[i + startIndex].basis is Bindable) {
@@ -333,7 +334,7 @@ class BindableList<T> extends BaseBindableList<T> {
         if (this.pinProperties) {
             // Delete any subproperties in the removal range.
             for (var i = start; i < end; i++) {
-                this._deleteSubpropertyKey(i);
+                this.notePropertyDeleted(i);
             }
 
             // Shift existing properties to their new indices.
@@ -360,7 +361,7 @@ class BindableList<T> extends BaseBindableList<T> {
 
             // Delete any subproperties whose indices no longer exist in the list.
             for (var i = super.value.length - deleteCount; i < super.value.length; i++) {
-                this._deleteSubpropertyKey(i);
+                this.notePropertyDeleted(i);
             }
         }
 
@@ -370,14 +371,6 @@ class BindableList<T> extends BaseBindableList<T> {
         // Send a splice notification.
         this.invalidationController.add(true);
         this.changeController.add(new SpliceChangeRecord.fromDelete(start, deleteCount));
-    }
-
-    /// Safely deletes a subproperty with the given key, if one exists.
-    void _deleteSubpropertyKey(int i) {
-        if (this.propertyCache.containsKey(i)) {
-            this.propertyCache[i].destroy();
-            this.propertyCache.remove(i);
-        }
     }
 
     /// Removes an item from the list. Any properties bound to the current index of that item

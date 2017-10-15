@@ -22,7 +22,15 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
     @protected
     Map<K, PropertyBindable<K, V>> propertyCache = {};
 
+    /// Listeners that subscribe to changes in subproperties
+    Map<K, StreamSubscription> _propertySubscriptions = {};
+
     BaseBindableCollection(value) : super(value);
+
+    void destroy() {
+        super.destroy();
+        this._propertySubscriptions.values.forEach((sub) => sub.cancel());
+    }
 
     /// BindableCollections in their most basic form are just Bindables whose value is a data
     /// structure instead of a primitive value, so setting that value replaces the entire
@@ -51,6 +59,31 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
             return value.value;
         } else {
             return value;
+        }
+    }
+
+    /// Attaches a PropertyBindable to a specific subproperty of this collection.
+    @protected
+    void attachPropertyBindable(PropertyBindable bindable) {
+        final propertyName = bindable.propertyName;
+        this._propertySubscriptions[propertyName] = bindable.changeStream.listen((change) {
+            if (change is PropertyChangeRecord) {
+                final newPath = change.path.toList();
+                newPath.insert(0, bindable.propertyName);
+                this.noteSubpropertyChange(newPath, change.baseChange);
+            } else {
+                this.noteSubpropertyChange([bindable.propertyName], change);
+            }
+        });
+    }
+
+    /// Tells the collection that one of its properties was deleted.
+    void notePropertyDeleted(K property) {
+        if (this.propertyCache.containsKey(property)) {
+            this.propertyCache[property].destroy();
+            this.propertyCache.remove(property);
+            this._propertySubscriptions[property].cancel();
+            this._propertySubscriptions.remove(property);
         }
     }
 
@@ -115,7 +148,8 @@ abstract class BindableDataStructure<T, K, V> extends BaseBindableCollection<T, 
         if (index is K) {
             if (!this.propertyCache.containsKey(index)) {
                 this.propertyCache[index] = new PropertyBindable(
-                    this, index, new Bindable(super.value[index]));
+                    index, new Bindable(super.value[index]));
+                this.attachPropertyBindable(this.propertyCache[index]);
             }
             return this.propertyCache[index];
         }

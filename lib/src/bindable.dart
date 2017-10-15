@@ -249,8 +249,14 @@ class SwitchBindable<T> extends BaseBindable<T> {
     StreamSubscription<ChangeRecord> _basisListener;
     StreamSubscription<ChangeRecord> _basisInvalidationListener;
 
-    SwitchBindable(BaseBindable<T> basis) {
-        this.basis = basis;
+    SwitchBindable(basis) {
+        if (basis is BaseBindable) {
+            this.basis = basis;
+        } else if (basis is T) {
+            this.basis = new Bindable(basis);
+        } else {
+            throw new Exception('Initial value for SwitchBindable had an invalid type.');
+        }
     }
 
     /// The Bindable whose value this switch is currently pulling from.
