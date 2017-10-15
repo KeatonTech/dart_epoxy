@@ -20,6 +20,7 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
     /// PropertyBindables are not created from the input data until they are accessed, which
     /// makes the constructor much more efficient and prevents unnecessary work in situations
     /// where the collection is always used as a whole value.
+    ///@nodoc
     @protected
     Map<K, PropertyBindable<K, V>> propertyCache = {};
 
@@ -46,12 +47,14 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
 
     /// Allows subclasses to selectively disable change records getting sent out, which can
     /// be used as an optimization in some cases.
+    ///@nodoc
     @protected
     bool disableChangeTracking = false;
 
     /// Converts input values for the collection into an appropriate bindable value. For
     /// example, if the user creates a BindableList of Lists, this will automatically convert
     /// it into a BindableList of BindableLists.
+    ///@nodoc
     @protected
     dynamic processValueForInsert(dynamic value) {
         if (value is List) value = new BindableList(value);
@@ -64,6 +67,7 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
     }
 
     /// Attaches a PropertyBindable to a specific subproperty of this collection.
+    ///@nodoc
     @protected
     void attachPropertyBindable(PropertyBindable bindable) {
         final propertyName = bindable.propertyName;
@@ -80,6 +84,7 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
     }
 
     /// Tells the collection that one of its properties was deleted.
+    ///@nodoc
     void notePropertyDeleted(K property) {
         if (this.propertyCache.containsKey(property)) {
             this.propertyCache[property].destroy();
@@ -92,6 +97,7 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
     /// Tells the collection that the value of one of its properties has changed. This is
     /// generally just used by the data binding system within Epoxy and should rarely or
     /// never be necessary for end users.
+    ///@nodoc
     void noteSubpropertyChange(List<dynamic> path, ChangeRecord baseChange) {
         if (path.length == 1 && baseChange is ValueChangeRecord) {
             final index = path[0];

@@ -33,6 +33,7 @@ abstract class BaseBindable<T> extends BaseWrappedValue<T> {
 
     /// The changeController is used to broadcast new ChangeRecords to the changeStream.
     /// It is only accessible by this class and its subclasses.
+    ///@nodoc
     @protected
     final StreamController<ChangeRecord> changeController =
         new StreamController<ChangeRecord>.broadcast(sync: true);
@@ -45,6 +46,7 @@ abstract class BaseBindable<T> extends BaseWrappedValue<T> {
     /// The invalidateController is used to clear the cache of derived bindables before the
     /// a ChangeRecord is sent out. This is used to prevent timing-related glitches that can
     /// occur in reactive graphs.
+    ///@nodoc
     @protected
     final StreamController invalidationController =
         new StreamController.broadcast(sync: true);
@@ -59,6 +61,7 @@ abstract class BaseBindable<T> extends BaseWrappedValue<T> {
     static int _lastId = 0;
 
     // When false, this bindable has been destroyed and can no longer be accessed.
+    ///@nodoc
     @protected
     bool alive = true;
 
@@ -283,6 +286,7 @@ class SwitchBindable<T> extends BaseBindable<T> {
     /// bindable is changed in such a way that causes the output value of this bindable
     /// to change.
     @protected
+    ///@nodoc
     void noteBasisChange(ChangeRecord change) {
         this.changeController.add(change);
     }

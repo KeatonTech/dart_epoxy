@@ -44,6 +44,7 @@ abstract class BaseBindableList<T> extends BindableDataStructure<List<T>, int, T
     List<T> toList() => super.value.toList();
     void set value(List<T> newValue) => this.replaceListValue(newValue);
 
+    ///@nodoc
     @protected
     void replaceListValue(List<T> newValue) {
         super.value = newValue;
@@ -53,6 +54,7 @@ abstract class BaseBindableList<T> extends BindableDataStructure<List<T>, int, T
     /// A reference to the actual underlying list. This is dangerous as any changes  to that
     /// list will potentially mess up the internal caches of this class, and so it is a
     /// protected function that should only ever be used by subclasses of this class.
+    ///@nodoc
     @protected
     List<T> get listInstance => super.value;
 
@@ -144,6 +146,7 @@ abstract class BaseBindableList<T> extends BindableDataStructure<List<T>, int, T
 
     /// Pulls Bindables and other wrapped values out of the list and puts them into the
     /// property cache, updating existing property bindings where necessary.
+    /// @nodoc
     @protected
     List<T> processValueList(List<dynamic> list, {int startIndex: 0}) {
         for (var i = 0; i < list.length; i++) {
