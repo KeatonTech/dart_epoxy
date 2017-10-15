@@ -28,7 +28,7 @@ void main() {
         bindableTestStruct.latitude = -10;
         final changeRecord = await propertyChange;
         expect(changeRecord is PropertyChangeRecord, isTrue);
-        expect(MirrorSystem.getName(changeRecord.path[0]), equals('latitude'));
+        expect(changeRecord.path[0], equals('latitude'));
         expect(changeRecord.baseChange is ValueChangeRecord, isTrue);
         expect(changeRecord.baseChange.oldValue, equals(10));
         expect(changeRecord.baseChange.newValue, equals(-10));
@@ -53,7 +53,7 @@ void main() {
         bindableTestStruct.longitude = bindableTestStruct.$latitude;
         final changeRecord = await propertyChange;
         expect(changeRecord is PropertyChangeRecord, isTrue);
-        expect(MirrorSystem.getName(changeRecord.path[0]), equals('longitude'));
+        expect(changeRecord.path[0], equals('longitude'));
         expect(changeRecord.baseChange is ValueChangeRecord, isTrue);
         expect(changeRecord.baseChange.oldValue, equals(90));
         expect(changeRecord.baseChange.newValue, equals(10));
@@ -65,29 +65,11 @@ void main() {
         expect(bindableTestStruct.longitude, equals(99));
     });
 
-    test('BindableStructs values can be accessed with bracket notation', () async {
-        final bindableTestStruct = new BindableStruct<LocationStruct>(-90, -40);
-        expect(bindableTestStruct[new Symbol('latitude')].value, equals(-90));
-        bindableTestStruct[new Symbol('latitude')] = 40;
-        expect(bindableTestStruct.latitude, equals(40));
-    });
-
     test('BindableStructs do not allow setting unknown properties', () async {
         final bindableTestStruct = new BindableStruct<LocationStruct>(-90, -40);
         bool caught = false;
         try {
             bindableTestStruct.altitude = 1000;
-        } catch (e) {
-            caught = true;
-        }
-        expect(caught, isTrue);
-    });
-
-    test('BindableStructs do not allow setting unknown properties with brackets', () async {
-        final bindableTestStruct = new BindableStruct<LocationStruct>(-90, -40);
-        bool caught = false;
-        try {
-            bindableTestStruct[new Symbol('altitude')] = 1000;
         } catch (e) {
             caught = true;
         }
@@ -102,7 +84,7 @@ void main() {
         bindableTestStruct.value = 'Goodbye';
         final changeRecord = await propertyChange;
         expect(changeRecord is PropertyChangeRecord, isTrue);
-        expect(MirrorSystem.getName(changeRecord.path[0]), equals('value'));
+        expect(changeRecord.path[0], equals('value'));
         expect(changeRecord.baseChange is ValueChangeRecord, isTrue);
         expect(changeRecord.baseChange.oldValue, equals('Hello'));
         expect(changeRecord.baseChange.newValue, equals('Goodbye'));
