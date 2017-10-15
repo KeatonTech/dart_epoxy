@@ -11,6 +11,7 @@ import 'change_record.dart';
 class MappedBindableList<T, O> extends FixedBindableList<T> {
     Stream<ChangeRecord> _mappedChangeStream;
     StreamSubscription<ChangeRecord> _inputChanges;
+    StreamSubscription _basisInvalidationListener;
     final BaseBindableList<O> _input;
     Bindable<Function> _mapBindable = new Bindable((c) => null);
 
@@ -29,6 +30,8 @@ class MappedBindableList<T, O> extends FixedBindableList<T> {
             this._mapBindable.value = mapFunction;
             this._mappedChangeStream = this._input.changeStream.map(_mapChangeRecord);
             this._inputChanges = this._mappedChangeStream.listen(_onInputChange);
+            this._basisInvalidationListener = this._input.invalidationStream.listen((c) =>
+                this.invalidationController.add(true));
 
             this._mapBindable.changeStream.listen((c) {
                 this.listInstance.replaceRange(
@@ -40,7 +43,9 @@ class MappedBindableList<T, O> extends FixedBindableList<T> {
     void destroy() {
         super.destroy();
         this._inputChanges.cancel();
+        this._basisInvalidationListener.cancel()
     }
+
     Stream<ChangeRecord> get changeStream => this._mappedChangeStream;
 
     ComputedBindable operator[] (int index) {
@@ -99,6 +104,7 @@ class MappedBindableList<T, O> extends FixedBindableList<T> {
 /// function in BindableList.
 class ComputedMappedBindableList<T, O> extends MappedBindableList<T, O> {
     List<StreamSubscription> _subscribers = [];
+    List<StreamSubscription> _invalidationSubscribers = [];
     List<Bindable> _mapInputs = [];
 
     /// Arguments to the map function are [mapItem, input1, input2, ...]
@@ -108,6 +114,8 @@ class ComputedMappedBindableList<T, O> extends MappedBindableList<T, O> {
                 this._subscribers.add(mapInput.changeStream.listen((c) {
                     this._updateMapBindable(map);
                 }));
+                this._invalidationSubscribers.add(mapInput.invalidationStream.listen((c) =>
+                    this.invalidationController.add(true)));
             });
             this._updateMapBindable(map);
         }
@@ -123,5 +131,6 @@ class ComputedMappedBindableList<T, O> extends MappedBindableList<T, O> {
     void destroy() {
         super.destroy();
         this._subscribers.forEach((subscriber) => subscriber.cancel());
+        this._invalidationSubscribers.forEach((subscriber) => subscriber.cancel());
     }
 }
