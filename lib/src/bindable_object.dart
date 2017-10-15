@@ -8,7 +8,7 @@ import 'property_bindables.dart';
 /// A bindable with fixed properties -- the basis for both BindableObject and BindableStruct.
 @proxy
 abstract class BaseBindableStruct extends
-        BaseBindableCollection<Map<String, Any>, String, Any> {
+        BaseBindableCollection<Map<String, dynamic>, String, dynamic> {
 
     BaseBindableStruct(value): super(value);
 
@@ -27,7 +27,7 @@ abstract class BaseBindableStruct extends
     }
 
     /// Returns the value of a published property, if one exists.
-    _mockGetter(String propName) {
+    dynamic _mockGetter(String propName) {
         if (!propertyCache.containsKey(propName)) {
             throw new Exception('Property ${propName} does not exist.');
         }
@@ -35,14 +35,14 @@ abstract class BaseBindableStruct extends
     }
 
     /// Sets the value of a published property, if one exists.
-    _mockSetter(String propName, newValue) {
+    void _mockSetter(String propName, newValue) {
         if (!propertyCache.containsKey(propName)) {
             throw new Exception('Property ${propName} does not exist.');
         }
 
         final processedValue = super.processValueForInsert(newValue);
         final subproperty = this.propertyCache[propName];
-        if (newValue is BaseBindable<T>) {
+        if (newValue is BaseBindable) {
             subproperty.basis = processedValue;
         } else {
             // Computed properties cannot be set, so they will have to be replaced
@@ -56,7 +56,7 @@ abstract class BaseBindableStruct extends
     }
 
     /// Makes .value work like any other struct property.
-    void get value { return this._mockGetter('value'); }
+    get value { return this._mockGetter('value'); }
     void set value(newValue) { return this._mockSetter('value', newValue); }
 }
 
@@ -133,7 +133,7 @@ abstract class BindableObject extends BaseBindableStruct {
 
             final varValue = thisMirror.getField(symbol).reflectee;
             if (varValue is PropertyBindable) {
-                if (!declaration.isFinal) {
+                if (!(declaration as VariableMirror).isFinal) {
                     throw new Exception('All bindable properties must be final.');
                 }
 

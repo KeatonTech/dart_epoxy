@@ -43,7 +43,7 @@ class MappedBindableList<T, O> extends FixedBindableList<T> {
     void destroy() {
         super.destroy();
         this._inputChanges.cancel();
-        this._basisInvalidationListener.cancel()
+        this._basisInvalidationListener.cancel();
     }
 
     Stream<ChangeRecord> get changeStream => this._mappedChangeStream;

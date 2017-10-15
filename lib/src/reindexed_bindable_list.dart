@@ -99,14 +99,14 @@ abstract class ReindexedBindableList<T, O> extends FixedBindableList<T> {
             return;
         }
 
-        var List<int> newIndices;
+        List<int> newIndices;
         if (change is PropertyChangeRecord) {
             newIndices = this._updateIndexOnPropertyChange(change, this._currentIndices);
         } else if (change is SpliceChangeRecord) {
             if (change.isDeletion) {
                 this._updateIndexForDeletedIndices(
                     change.startIndex, change.startIndex + change.deletedCount,
-                    this._currentIndices)
+                    this._currentIndices);
             } else {
                 this._updateIndexWithNewValues(
                     this._input.value.sublist(
