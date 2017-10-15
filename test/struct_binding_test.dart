@@ -14,6 +14,10 @@ class LocationStruct {
     LocationStruct(this.latitude, this.longitude);
 }
 
+class ValueStruct {
+    String value = 'Hello';
+}
+
 void main() {
     test('BindableStructs can be build from structs with default values', () async {
         final bindableTestStruct = new BindableStruct<DefaultValueStruct>();
@@ -88,5 +92,20 @@ void main() {
             caught = true;
         }
         expect(caught, isTrue);
+    });
+
+    test('BindableStructs can have properties named "value"', () async {
+        final bindableTestStruct = new BindableStruct<ValueStruct>();
+        expect(bindableTestStruct.value, equals('Hello'));
+
+        final propertyChange = bindableTestStruct.changeStream.first;
+        bindableTestStruct.value = 'Goodbye';
+        final changeRecord = await propertyChange;
+        expect(changeRecord is PropertyChangeRecord, isTrue);
+        expect(MirrorSystem.getName(changeRecord.path[0]), equals('value'));
+        expect(changeRecord.baseChange is ValueChangeRecord, isTrue);
+        expect(changeRecord.baseChange.oldValue, equals('Hello'));
+        expect(changeRecord.baseChange.newValue, equals('Goodbye'));
+        expect(bindableTestStruct.value, equals('Goodbye'));
     });
 }

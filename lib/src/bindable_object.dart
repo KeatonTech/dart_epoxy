@@ -49,36 +49,47 @@ class BindableObject extends BaseBindableCollection<Map<String, Any>, String, An
     /// Allows property values to be accessed using dot notation.
     noSuchMethod(Invocation invocation) {
         final realName = MirrorSystem.getName(invocation.memberName);
-
         if (invocation.isGetter) {
-            if (!propertyCache.containsKey(realName)) {
-                print(propertyCache);
-                throw new Exception('Property ${realName} does not exist.');
-            }
-            return propertyCache[realName].value;
+            return this._mockGetter(realName);
         } else if (invocation.isSetter) {
             final setterProperty = realName.replaceFirst('=', '');
-            if (!propertyCache.containsKey(setterProperty)) {
-                throw new Exception('Property ${setterProperty} does not exist.');
-            }
-
             final newValue = invocation.positionalArguments[0];
-            final processedValue = super.processValueForInsert(newValue);
-
-            final subproperty = this.propertyCache[setterProperty];
-            if (newValue is BaseBindable<T>) {
-                subproperty.basis = processedValue;
-            } else {
-                // Computed properties cannot be set, so they will have to be replaced
-                // with a normal binding.
-                try {
-                    subproperty.value = processedValue;
-                } catch (e) {
-                    subproperty.basis = new Bindable(processedValue);
-                }
-            }
+            return this._mockSetter(setterProperty, newValue);
         } else {
             throw new Exception('Invalid invocation on BindableObject');
         }
     }
+
+    /// Returns the value of a published property, if one exists.
+    _mockGetter(String propName) {
+        if (!propertyCache.containsKey(propName)) {
+            throw new Exception('Property ${propName} does not exist.');
+        }
+        return propertyCache[propName].value;
+    }
+
+    /// Sets the value of a published property, if one exists.
+    _mockSetter(String propName, newValue) {
+        if (!propertyCache.containsKey(propName)) {
+            throw new Exception('Property ${propName} does not exist.');
+        }
+
+        final processedValue = super.processValueForInsert(newValue);
+        final subproperty = this.propertyCache[propName];
+        if (newValue is BaseBindable<T>) {
+            subproperty.basis = processedValue;
+        } else {
+            // Computed properties cannot be set, so they will have to be replaced
+            // with a normal binding.
+            try {
+                subproperty.value = processedValue;
+            } catch (e) {
+                subproperty.basis = new Bindable(processedValue);
+            }
+        }
+    }
+
+    /// Makes .value work like any other struct property.
+    void get value { return this._mockGetter('value'); }
+    void set value(newValue) { return this._mockSetter('value', newValue); }
 }

@@ -28,6 +28,10 @@ class BindableLocation3D extends BindableLocation {
     }
 }
 
+class ValueBindable extends BindableObject {
+    final $value = new PropertyBindable('value', 'Test Value');
+}
+
 void main() {
     test('BindableObjects do not allow non-final bindable properties', () {
         bool errored = false;
@@ -120,8 +124,23 @@ void main() {
         expect(changeRecord.baseChange.oldValue, equals(0));
         expect(changeRecord.baseChange.newValue, equals(150));
         expect(bindableLocation.altitude, equals(150));
-        
+
         bindableLocation.latitude = 150;
         expect(bindableLocation.altitude, equals(200));
+    });
+
+    test('BindableObjects allow "value" as a property name', () async {
+        final bindableLocation = new ValueBindable();
+        expect(bindableLocation.value, equals('Test Value'));
+
+        final propertyChange = bindableLocation.changeStream.first;
+        bindableLocation.value = 'Changed';
+        final changeRecord = await propertyChange;
+        expect(changeRecord is PropertyChangeRecord, isTrue);
+        expect(changeRecord.path[0], equals('value'));
+        expect(changeRecord.baseChange is ValueChangeRecord, isTrue);
+        expect(changeRecord.baseChange.oldValue, equals('Test Value'));
+        expect(changeRecord.baseChange.newValue, equals('Changed'));
+        expect(bindableLocation.value, equals('Changed'));
     });
 }

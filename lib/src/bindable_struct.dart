@@ -75,6 +75,6 @@ class BindableStruct<C> extends BindableDataStructure<Map<Symbol, Any>, Symbol, 
     }
 
     /// Makes .value work like any other struct property.
-    void get value { RunUnaryHandlersuper[new Symbol('value')]; }
-    void set value(Any newValue) { return super[new Symbol('value')] = newValue; }
+    void get value { return super[new Symbol('value')].value; }
+    void set value(newValue) { return super[new Symbol('value')] = newValue; }
 }
