@@ -7,7 +7,7 @@ import 'property_bindables.dart';
 
 /// A base class for custom classes that need to work within a reactive model.
 @proxy
-class BindableObject extends BaseBindableCollection<Map<String, Any>, String, Any> {
+abstract class BindableObject extends BaseBindableCollection<Map<String, Any>, String, Any> {
 
     /// Constructs a BindableObject by hooking the PropertyBindables from the current
     /// instance into a BindableCollection.
