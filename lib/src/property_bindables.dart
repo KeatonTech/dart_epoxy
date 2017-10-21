@@ -18,7 +18,7 @@ class PropertyBindable<K, V> extends SwitchBindable<V> {
     /// a simpler function on SwitchBindable to notify the parent bindable.
     void noteBasisChange(ChangeRecord change) {
         if (this.destroyed) return;
-        this.changeController.add(change);
+        this.sendChangeRecord(change);
     }
 }
 

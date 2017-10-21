@@ -64,8 +64,7 @@ class BindableMap<K, V> extends BindableDataStructure<Map<K, V>, K, V> {
         if (!this.value.containsKey(key)) return false;
         final lastValue = this.value.remove(key);
         if (this._keys != null) this._keys.remove(key);
-        this.invalidationController.add(true);
-        this.changeController.add(
+        this.sendChangeRecord(
             new PropertyChangeRecord([key], new ValueChangeRecord(lastValue, null)));
         this.notePropertyDeleted(key);
         return true;

@@ -116,8 +116,7 @@ abstract class BaseBindableCollection<T, K, V> extends Bindable<T> {
             }
         }
         if (!this.disableChangeTracking) {
-            this.invalidationController.add(true);
-            this.changeController.add(new PropertyChangeRecord(path, baseChange));
+            this.sendChangeRecord(new PropertyChangeRecord(path, baseChange));
         }
     }
 }

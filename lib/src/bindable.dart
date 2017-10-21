@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:mirrors';
 import 'package:meta/meta.dart';
 import 'change_record.dart';
+import 'epoxy_controller.dart';
 
 
 /// Represents a single value that can be used in the data graph.
@@ -33,15 +34,13 @@ abstract class BaseBindable<T> extends BaseWrappedValue<T> {
 
     /// The changeController is used to broadcast new ChangeRecords to the changeStream.
     /// It is only accessible by this class and its subclasses.
-    ///@nodoc
-    @protected
-    final StreamController<ChangeRecord> changeController =
+    final StreamController<ChangeRecord> _changeController =
         new StreamController<ChangeRecord>.broadcast(sync: true);
 
     /// Returns a stream of ChangeRecord events, which contain information about how the
     /// value of this bindable changes at runtime. Events are dispatched synchonously to
     /// allow the data model to stay consistently up to date.
-    Stream<ChangeRecord> get changeStream => this.changeController.stream;
+    Stream<ChangeRecord> get changeStream => this._changeController.stream;
 
     /// The invalidateController is used to clear the cache of derived bindables before the
     /// a ChangeRecord is sent out. This is used to prevent timing-related glitches that can
@@ -74,6 +73,24 @@ abstract class BaseBindable<T> extends BaseWrappedValue<T> {
     void destroy() {
         this.alive = false;
         this.invalidationController.add(true);
+    }
+
+    /// Internal function that sends a ChangeRecord to the dependants of this Bindable, or
+    /// queues it in the EpoxyController if a batching operation is active. This should be
+    /// overridden by subclasses as necessary.
+    /// @nodoc
+    void sendChangeRecord(ChangeRecord changeRecord, {
+            bool avoidBatching = false,
+            bool avoidInvalidation = false,
+        }) {
+
+        if (!avoidInvalidation) this.invalidationController.add(true);
+        if (Epoxy.isBatching && !avoidBatching) {
+            Epoxy.queueBatchChange(this, changeRecord);
+            return;
+        }
+
+        this._changeController.add(changeRecord);
     }
 
     BaseWrappedValue<R> _graphOperator<R>(dynamic other, Function performOperation) {
@@ -133,7 +150,7 @@ class Bindable<T> extends BaseBindable<T> {
 
     void destroy() {
         super.destroy();
-        this.changeController.add(new ValueChangeRecord(this._value, null));
+        this.sendChangeRecord(new ValueChangeRecord(this._value, null));
     }
 
     T get value {
@@ -145,10 +162,9 @@ class Bindable<T> extends BaseBindable<T> {
     /// cause any ComputedBindables that depend on this one to update as well.
     void set value(T newValue) {
         if (!this.alive) throw new Exception('Bindable has been destroyed.');
-        this.invalidationController.add(true);
         final changeRecord = new ValueChangeRecord(this._value, newValue);
         this._value = newValue;
-        this.changeController.add(changeRecord);
+        this.sendChangeRecord(changeRecord);
     }
 }
 
@@ -167,15 +183,20 @@ class ComputedBindable<T> extends BaseBindable<T> {
     List<StreamSubscription> _listeners = [];
     List<StreamSubscription> _invalidationListeners = [];
 
-    T _cachedValue = null;
-    bool _cacheValid = false;
+    /// @nodoc
+    @protected
+    T cachedValue = null;
+
+    /// @nodoc
+    @protected
+    bool cacheValid = false;
     bool _initialValue = true;
 
     ComputedBindable(this.inputs, this._computeFunction) {
         this._listeners = inputs.map((input) =>
-            input.changeStream.listen((c) => this._recompute())).toList();
+            input.changeStream.listen((c) => this.recompute())).toList();
         this._invalidationListeners = inputs.map((input) =>
-            input.invalidationStream.listen((c) => this._invalidate())).toList();
+            input.invalidationStream.listen((c) => this.invalidate())).toList();
     }
 
     /// Allows this instance to be cleanly removed by the garbage collector by unhooking all
@@ -183,23 +204,27 @@ class ComputedBindable<T> extends BaseBindable<T> {
     void destroy() {
         super.destroy();
         this.alive = false;
-        this._cacheValid = false;
-        this.changeController.add(new ValueChangeRecord(this._cachedValue , null));
-        this._cachedValue = null;
+        this.cacheValid = false;
+        this.sendChangeRecord(new ValueChangeRecord(this.cachedValue , null));
+        this.cachedValue = null;
         this._listeners.map((listener) => listener.cancel());
         this._invalidationListeners.map((listener) => listener.cancel());
     }
 
-    // Invalidates the cache so that the next time the value is read it must be recomputed.
-    void _invalidate() {
-        this._cacheValid = false;
+    /// Invalidates the cache so that the next time the value is read it must be recomputed.
+    /// @nodoc
+    @protected
+    void invalidate() {
+        this.cacheValid = false;
         this._initialValue = false;
     }
 
-    // The change stream of computed bindables updates whenever any of their inputs update.
-    T _recompute() {
+    /// The change stream of computed bindables updates whenever any of their inputs update.
+    /// @nodoc
+    @protected
+    T recompute() {
         if (!this.alive) throw new Exception('ComputedBindable has been destroyed.');
-        if (this._cacheValid) return this._cachedValue;
+        if (this.cacheValid) return this.cachedValue;
 
         T newComputed;
         try {
@@ -209,12 +234,12 @@ class ComputedBindable<T> extends BaseBindable<T> {
             newComputed = null;
         }
 
-        final oldValue = this._cachedValue;
-        this._cachedValue = newComputed;
-        this._cacheValid = true;
+        final oldValue = this.cachedValue;
+        this.cachedValue = newComputed;
+        this.cacheValid = true;
         if (!this._initialValue && oldValue != newComputed) {
             this.invalidationController.add(true);
-            this.changeController.add(new ValueChangeRecord(oldValue, newComputed));
+            this.sendChangeRecord(new ValueChangeRecord(oldValue, newComputed));
         }
         this._initialValue = false;
         return newComputed;
@@ -225,8 +250,8 @@ class ComputedBindable<T> extends BaseBindable<T> {
     /// inefficient operation.
     T get value {
         if (!this.alive) throw new Exception('ComputedBindable has been destroyed.');
-        if (this._cacheValid) return this._cachedValue;
-        return this._recompute();
+        if (this.cacheValid) return this.cachedValue;
+        return this.recompute();
     }
 
     /// It is not possible to explicitly set the value of ComputedBindables because the
@@ -278,7 +303,7 @@ class SwitchBindable<T> extends BaseBindable<T> {
 
         final newValue = this.value;
         if (newValue != oldValue && shouldNotify) {
-            this.noteBasisChange(new ValueChangeRecord(oldValue, newValue));
+            this.sendChangeRecord(new ValueChangeRecord(oldValue, newValue));
         }
     }
 
@@ -288,7 +313,7 @@ class SwitchBindable<T> extends BaseBindable<T> {
     @protected
     ///@nodoc
     void noteBasisChange(ChangeRecord change) {
-        this.changeController.add(change);
+        this._changeController.add(change);
     }
 
     void destroy() {

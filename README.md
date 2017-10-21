@@ -93,8 +93,11 @@ final fibonacci = new BindableList([1, 1]);
 for (var i = 0; i < 10; i++) fibonacci.add(fibonacci[i] + fibonacci[i + 1]);
 expect(fibonacci.value, equals([1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]));
 
-fibonacci[0] = 2;
-fibonacci[1] = 2;
+// Batching changes means that each computed value in the list will only need to update once.
+Epoxy.batchChanges(() {
+    fibonacci[0] = 2;
+    fibonacci[1] = 2;
+});
 expect(fibonacci.value, equals([2, 2, 4, 6, 10, 16, 26, 42, 68, 110, 178, 288]));
 ```
 

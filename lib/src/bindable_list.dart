@@ -296,8 +296,7 @@ class BindableList<T> extends BaseBindableList<T> {
         super.listInstance.insertAll(insertionIndex, rawInsert);
 
         // Send a splice notification.
-        this.invalidationController.add(true);
-        this.changeController.add(
+        this.sendChangeRecord(
             new SpliceChangeRecord.fromInsert(insertionIndex, insertCount));
     }
 
@@ -371,8 +370,7 @@ class BindableList<T> extends BaseBindableList<T> {
         super.listInstance.removeRange(start, end);
 
         // Send a splice notification.
-        this.invalidationController.add(true);
-        this.changeController.add(new SpliceChangeRecord.fromDelete(start, deleteCount));
+        this.sendChangeRecord(new SpliceChangeRecord.fromDelete(start, deleteCount));
     }
 
     /// Removes an item from the list. Any properties bound to the current index of that item
@@ -433,8 +431,7 @@ class FixedBindableListCopy<T> extends FixedBindableList<T> {
 
     FixedBindableListCopy(BindableList<T> copy): super(copy.listInstance) {
         this._parentListener = copy.changeStream.listen((change) {
-            this.invalidationController.add(true);
-            this.changeController.add(change);
+            this.sendChangeRecord(change);
         });
     }
     void destroy() {
