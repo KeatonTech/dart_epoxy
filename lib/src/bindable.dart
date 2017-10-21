@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:mirrors';
 import 'package:meta/meta.dart';
+import 'async_bindables.dart';
 import 'change_record.dart';
 import 'epoxy_controller.dart';
 
@@ -127,6 +128,11 @@ abstract class BaseBindable<T> extends BaseWrappedValue<T> {
     operator []=(dynamic index, dynamic value) {
         throw new Exception('Cannot set property in non-collection Bindable.');
     }
+
+    /// Returns a debounced version of the current bindable.
+    DebouncerBindable<T> debounce([Duration delay = new Duration(milliseconds: 200)]) {
+        return new DebouncerBindable(this, delay);
+    }
 }
 
 
@@ -178,10 +184,13 @@ class Bindable<T> extends BaseBindable<T> {
 /// ComputedBindables use a 'pull' approach, lazily computing their values when they are
 /// accessed.
 class ComputedBindable<T> extends BaseBindable<T> {
-    Function _computeFunction;
     List<Bindable> inputs = [];
     List<StreamSubscription> _listeners = [];
     List<StreamSubscription> _invalidationListeners = [];
+
+    /// @nodoc
+    @protected
+    Function computeFunction;
 
     /// @nodoc
     @protected
@@ -190,9 +199,12 @@ class ComputedBindable<T> extends BaseBindable<T> {
     /// @nodoc
     @protected
     bool cacheValid = false;
-    bool _initialValue = true;
 
-    ComputedBindable(this.inputs, this._computeFunction) {
+    /// @nodoc
+    @protected
+    bool initialValue = true;
+
+    ComputedBindable(this.inputs, this.computeFunction) {
         this._listeners = inputs.map((input) =>
             input.changeStream.listen((c) => this.recompute())).toList();
         this._invalidationListeners = inputs.map((input) =>
@@ -216,33 +228,38 @@ class ComputedBindable<T> extends BaseBindable<T> {
     @protected
     void invalidate() {
         this.cacheValid = false;
-        this._initialValue = false;
+        this.initialValue = false;
     }
 
     /// The change stream of computed bindables updates whenever any of their inputs update.
     /// @nodoc
     @protected
-    T recompute() {
+    void recompute() {
         if (!this.alive) throw new Exception('ComputedBindable has been destroyed.');
         if (this.cacheValid) return this.cachedValue;
 
         T newComputed;
         try {
             final inputValues = this.inputs.map((input) => input.value).toList();
-            newComputed = Function.apply(this._computeFunction, inputValues);
+            newComputed = Function.apply(this.computeFunction, inputValues);
         } catch (e) {
             newComputed = null;
         }
 
+        this.updateCacheValue(newComputed);
+    }
+
+    /// Updates the internal cached value.
+    /// @nodoc
+    @protected
+    void updateCacheValue(T newValue) {
         final oldValue = this.cachedValue;
-        this.cachedValue = newComputed;
+        this.cachedValue = newValue;
         this.cacheValid = true;
-        if (!this._initialValue && oldValue != newComputed) {
-            this.invalidationController.add(true);
-            this.sendChangeRecord(new ValueChangeRecord(oldValue, newComputed));
+        if (!this.initialValue && oldValue != newValue) {
+            this.sendChangeRecord(new ValueChangeRecord(oldValue, newValue));
         }
-        this._initialValue = false;
-        return newComputed;
+        this.initialValue = false;
     }
 
     /// Returns the current computed value. Note that in some cases the value will not be
@@ -250,8 +267,8 @@ class ComputedBindable<T> extends BaseBindable<T> {
     /// inefficient operation.
     T get value {
         if (!this.alive) throw new Exception('ComputedBindable has been destroyed.');
-        if (this.cacheValid) return this.cachedValue;
-        return this.recompute();
+        if (!this.cacheValid) this.recompute();
+        return this.cachedValue;
     }
 
     /// It is not possible to explicitly set the value of ComputedBindables because the
