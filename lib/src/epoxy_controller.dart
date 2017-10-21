@@ -26,7 +26,9 @@ class Epoxy {
     static bool get isBatching => Epoxy._isBatching;
 
     /// Batches all of the changes within the callback function into one change operation
-    /// that can be processed more efficiently.
+    /// that can be processed more efficiently. Note that currently only value changes will
+    /// be batched, things like adding an item to a BindableList will still run immediately.
+    /// This may change in the future.
     static void batchChanges(Function batchedZone) {
         Epoxy._isBatching = true;
         batchedZone();
