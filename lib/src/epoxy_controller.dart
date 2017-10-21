@@ -37,6 +37,13 @@ class Epoxy {
     /// Bindables when Epoxy.isBatching is true.
     /// @nodoc
     static void queueBatchChange(BaseBindable bindable, ChangeRecord changeRecord) {
+        if (!(changeRecord is ValueChangeRecord)) {
+            // Currently batching only supports simple value changes. In the future it may be
+            // possible to batch subproperty changes and splices as well.
+            return bindable.sendChangeRecord(
+                changeRecord, avoidBatching: true, avoidInvalidation: true);
+        }
+
         dynamic originalValue = null;
         if (Epoxy._changeBatch.containsKey(bindable.id)) {
             originalValue = Epoxy._changeBatch[bindable.id].originalValue;
