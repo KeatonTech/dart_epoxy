@@ -31,9 +31,10 @@ class AsyncComputedBindable<V> extends ComputedBindable<V> {
         if (!this.alive) throw new Exception('ComputedBindable has been destroyed.');
         if (this.cacheValid) return this.cachedValue;
 
-        Future<T> computationFuture;
+        FutureOr<T> computationResult;
         final inputValues = this.inputs.map((input) => input.value).toList();
-        computationFuture = Function.apply(this.computeFunction, inputValues);
+        computationResult = Function.apply(this.computeFunction, inputValues);
+        Future<T> computationFuture = new Future.value(computationResult);
 
         Future<T> orderingFuture = new Future.value(null);
         if (!this.cancelInterruptedFutures && this.maintainOrdering &&

@@ -20,6 +20,21 @@ void main() {
         await onChange;
     });
 
+    test('Async bindables can accept non-async values', () async {
+        var inputBindable = new Bindable(0);
+        var asyncComputed = new AsyncComputedBindable(
+            [inputBindable], (input) => 4);
+        expect(asyncComputed.value, equals(null));
+
+        var onChange = asyncComputed.changeStream.first.then((change) {
+            expect(change is ValueChangeRecord, isTrue);
+            expect(change.newValue, equals(4));
+        });
+
+        inputBindable.value = 2;
+        await onChange;
+    });
+
     test('Async bindables can cancel futures when inputs change', () async {
         int completerIndex = 0;
         Completer<int> completer1 = new Completer();
