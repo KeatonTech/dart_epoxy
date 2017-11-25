@@ -1,8 +1,11 @@
 name: epoxy
+author: "keaton.brandt@gmail.com"
+homepage: "https://github.com/KeatonTech/epoxy"
+version: "0.1.0"
 dev_dependencies:
     test:
     matcher:
 dependencies:
-    meta: 1.1.2
+    meta: ">=1.1.2 <2.0.0"
 transformers:
 - $dart2js
