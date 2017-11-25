@@ -1,7 +1,7 @@
 import 'dart:mirrors';
 import 'package:test/test.dart';
 import 'package:epoxy/epoxy.dart';
-import 'package:epoxy/testing.dart';
+import './util/util.dart';
 
 class BindableLocation extends BindableObject {
     final $latitude = new PropertyBindable('latitude', 100);

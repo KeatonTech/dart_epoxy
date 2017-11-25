@@ -3,6 +3,6 @@ dev_dependencies:
     test:
     matcher:
 dependencies:
-    meta:
+    meta: 1.1.2
 transformers:
 - $dart2js

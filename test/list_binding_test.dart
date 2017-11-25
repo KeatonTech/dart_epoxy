@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:epoxy/epoxy.dart';
-import 'package:epoxy/testing.dart';
+import './util/util.dart';
 
 void main() {
     test('BindableList can be built from a flat list of data', () {

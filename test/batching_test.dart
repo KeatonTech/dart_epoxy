@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:test/test.dart';
 import 'package:epoxy/epoxy.dart';
-import 'package:epoxy/testing.dart';
+import './util/util.dart';
 
 void main() {
     test('Batching collapses repeated changes on one bindable', () async {

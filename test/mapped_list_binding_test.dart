@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:test/test.dart';
 import 'package:epoxy/epoxy.dart';
-import 'package:epoxy/testing.dart';
+import './util/util.dart';
 
 void main() {
     test('Mapping BindableList produces valid results', () {

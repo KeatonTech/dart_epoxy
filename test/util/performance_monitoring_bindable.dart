@@ -1,4 +1,4 @@
-import '../bindable.dart';
+import 'package:epoxy/epoxy.dart';
 
 /// PerformanceMonitoringBindables are a type of ComputedBindable that keep track of how
 /// often they are recomputed and how long each computation takes.
