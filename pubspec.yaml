@@ -1,7 +1,7 @@
 name: dart_epoxy
 author: "Keaton Brandt <keaton.brandt@gmail.com>"
 description: "The reactive glue for Dart"
-homepage: "https://github.com/KeatonTech/epoxy"
+homepage: "https://github.com/KeatonTech/dart_epoxy"
 version: "0.1.0"
 dev_dependencies:
     test:
