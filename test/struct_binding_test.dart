@@ -1,6 +1,6 @@
 import 'dart:mirrors';
 import 'package:test/test.dart';
-import 'package:epoxy/epoxy.dart';
+import 'package:dart_epoxy/dart_epoxy.dart';
 import './util/util.dart';
 
 class DefaultValueStruct {

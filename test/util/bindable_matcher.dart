@@ -1,5 +1,5 @@
 import 'package:matcher/matcher.dart';
-import 'package:epoxy/epoxy.dart';
+import 'package:dart_epoxy/dart_epoxy.dart';
 
 /// A matcher that unpacks bindables.
 ///

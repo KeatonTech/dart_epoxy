@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:test/test.dart';
-import 'package:epoxy/base.dart';
+import 'package:dart_epoxy/base.dart';
 
 void main() {
     test('Bindables can be set', () async {

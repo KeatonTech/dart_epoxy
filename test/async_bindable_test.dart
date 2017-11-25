@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:test/test.dart';
-import 'package:epoxy/epoxy.dart';
+import 'package:dart_epoxy/dart_epoxy.dart';
 
 void main() {
     test('Async bindables wait for a future to resolve to change their value', () async {
